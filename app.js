@@ -41,6 +41,7 @@ $(function() {
 		catClicked: function() {
 			var cat = model.getCurrentCat();
 			cat.clicks++;
+			catView.render();
 		}
 	};
 
@@ -76,7 +77,6 @@ $(function() {
 			var img = $('<img src="' + cat.img + '">');
 			img.click(function() {
 				octopus.catClicked();
-				catView.render();
 			});
 			this.$cat.append(img);
 			this.$cat.append('<p>Clicks: ' + cat.clicks + '</p>');
