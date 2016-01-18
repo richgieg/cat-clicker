@@ -3,6 +3,7 @@ $(function() {
 	/* ======= Model ======= */
 
 	var model = {
+		adminVisible: false,
 		currentCat: null,
 		cats: [
 			{name: 'Sam', img: 'cat_picture1.jpg', clicks: 0},
@@ -26,6 +27,7 @@ $(function() {
 			// Initialize the views
 			catListView.init();
 			catView.init();
+			adminView.init();
 		},
 
 		// Return the current cat object from the model
@@ -36,6 +38,8 @@ $(function() {
 		// Update the model's current cat object
 		setCurrentCat: function(cat) {
 			model.currentCat = cat;
+			catView.render();
+			adminView.hide();
 		},
 
 		// Get the array of cat objects from the model
@@ -46,6 +50,26 @@ $(function() {
 		// Increment the click counter on the model's current cat object
 		incrementCounter: function() {
 			model.currentCat.clicks++;
+			catView.render();
+			adminView.render();
+		},
+
+		showAdminView: function() {
+			adminView.render();
+		},
+
+		hideAdminView: function() {
+			adminView.hide();
+		},
+
+		saveData: function(name, img, clicks) {
+			var cat = model.currentCat;
+			cat.name = name;
+			cat.img = img;
+			cat.clicks = clicks;
+			adminView.hide();
+			catListView.render();
+			catView.render();
 		}
 	};
 
@@ -65,6 +89,9 @@ $(function() {
 
 		// Renders this view
 		render: function() {
+			// Clear the element
+			this.$catList.empty();
+
 			// Get the array of cats from the octopus
 			var cats = octopus.getCats();
 			var html = '';
@@ -83,7 +110,6 @@ $(function() {
 				btn.click((function(cat) {
 					return function() {
 						octopus.setCurrentCat(cat);
-						catView.render();
 					}
 				})(cat));
 
@@ -102,11 +128,16 @@ $(function() {
 			this.$name = $('#cat-name');
 			this.$img = $('#cat-img');
 			this.$count = $('#cat-count');
+			this.$adminBtn = $('#admin-btn');
 
-			// Create the click handler
+			// Create click handler for cat image
 			this.$img.click(function() {
 				octopus.incrementCounter();
-				catView.render();
+			});
+
+			// Create click handler for the admin button
+			this.$adminBtn.click(function() {
+				octopus.showAdminView();
 			});
 
 			// Render the view for the first time
@@ -121,6 +152,53 @@ $(function() {
 			this.$name.text(cat.name);
 			this.$count.text(cat.clicks);
 			this.$img.attr('src', cat.img);
+		}
+	};
+
+	var adminView = {
+
+		// Initializes this view
+		init: function() {
+			// Initialize jQuery DOM element pointers
+			this.$admin = $('#cat-admin');
+			this.$headerName = $('#cat-admin-name');
+			this.$name = $('#input-name');
+			this.$img = $('#input-img');
+			this.$clicks = $('#input-clicks');
+			this.$cancelBtn = $('#cancel-btn');
+			this.$submitBtn = $('#submit-btn');
+
+			// Create click handler for the cancel button
+			this.$cancelBtn.click(function() {
+				octopus.hideAdminView();
+			});
+
+			// Create submit handler for the admin form
+			this.$admin.submit(function() {
+				name = adminView.$name.val();
+				img = adminView.$img.val();
+				clicks = parseInt(adminView.$clicks.val(), 10);
+				octopus.saveData(name, img, clicks);
+				return false;
+			});
+
+			// Hide this view
+			this.hide();
+		},
+
+		// Renders this view
+		render: function() {
+			cat = octopus.getCurrentCat();
+			this.$headerName.text(cat.name);
+			this.$name.val(cat.name);
+			this.$img.val(cat.img);
+			this.$clicks.val(cat.clicks);
+			this.$admin.show();
+		},
+
+		// Hides this view
+		hide: function() {
+			this.$admin.hide();
 		}
 	};
 
